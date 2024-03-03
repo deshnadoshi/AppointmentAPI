@@ -39,6 +39,12 @@ const process = async (req, res) => {
                 });
             });
 
+            // Declaring these to avoid undefined errors
+            // attendee = "";
+            // dtstart = ""; 
+            // method = ""; 
+            // stat = "";  
+
             const data = JSON.parse(body);
             const { attendee, dtstart, method, stat } = data;
             let result = true; 
@@ -64,16 +70,16 @@ const process = async (req, res) => {
             let checkMethod = false; 
             let checkStat = false; 
 
-            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
             const phoneRegex = /^\d{3}-?\d{3}-?\d{4}$/;
 
-            if (emailRegex.test(checkAttendee) || phoneRegex.test(attendee)){
+            if (emailRegex.test(attendee) || phoneRegex.test(attendee)){
                 checkAttendee = true; 
             }
 
             let selectedDate = new Date(dtstart); 
 
-            if (isValidDate(dtstart) && !isWeekend(selectedDate) && isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
+            if (isValidDate(dtstart) && !isWeekend(selectedDate) && !isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
                 // If it is valid, not a weekend, not a bank holiday, in the correct format, and not already selected, it is a viable date.
                 checkDtstart = true; 
             }
@@ -87,12 +93,40 @@ const process = async (req, res) => {
             }
 
             let confirmationCode = ""; 
+            let dtstamp = new Date();  
 
             if (checkAttendee && checkDtstart && checkMethod && checkStat){
                 result = true; 
                 confirmationCode = generateConfirmationCode(); 
+                try {
+                    const connection = await pool.getConnection();
                 
-
+                    const query = `
+                      INSERT INTO appointments (attendee, dtstart, dtstamp, method, stat, uid)
+                      VALUES (?, ?, ?, ?, ?, ?)
+                    `;
+                
+                    const params = [
+                      data.attendee,
+                      data.dtstart,
+                      data.dtstamp,
+                      data.method,
+                      data.stat,
+                      data.uid
+                    ];
+                
+                    const [newEntry] = await connection.execute(query, params);
+                
+                    connection.release();
+                
+                    console.log('New entry added:', newEntry);
+                
+                    return insertResult;
+                } catch (error) {
+                    console.error('Error adding new entry:', error);
+                    throw error;
+                }
+                          
 
             } else {
                 result = false; 
@@ -374,10 +408,10 @@ function checkDateFormat(str){
     return false; 
 }
 
-function isValidDate(date_str) {
-    let year = Number(date_str.split("-")[0]); 
-    let month = Number(date_str.split("-")[1]) - 1; 
-    let day = Number(date_str.split("-")[2]); 
+function isValidDate(dateStr) {
+    let year = Number(dateStr.split("-")[0]); 
+    let month = Number(dateStr.split("-")[1]) - 1; 
+    let day = Number(dateStr.split("-")[2]); 
 
     const date = new Date(year, month, day); 
 
