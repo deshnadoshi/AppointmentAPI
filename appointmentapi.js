@@ -59,7 +59,6 @@ const process = async (req, res) => {
         
                 let bookedDates = rows.map(row => row[dtstart]);
                 // bookedDates contains all of the dates that are already in the table
-                console.log(bookedDates); 
             } catch (error) {
                 console.error('Error fetching column values:', error);
                 throw error;
@@ -120,9 +119,12 @@ const process = async (req, res) => {
                                 
                 } catch (error) {
                     
-
-                    console.error('Error adding new entry:', error);
-                    throw error;
+                    if (error.code === 'ER_DUP_ENTRY') {
+                        result = false; 
+                    } else {
+                        console.error('Error adding new entry:', error);
+                        throw error;
+                    }
                 }
                           
             } else {
@@ -132,7 +134,7 @@ const process = async (req, res) => {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             const responseMessage = result
                 ? `The appointment has been scheduled successfully. Here is the confirmation code: ${JSON.stringify(confirmationCode)}`
-                : 'One or more entries in your request are invalid/incorrectly formatted. Please try again.';
+                : 'One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.';
           
           
             res.end(JSON.stringify({ success: result, message: responseMessage }));
@@ -306,80 +308,8 @@ const process = async (req, res) => {
 const server = http.createServer(process);
 
 
-// const server = http.createServer((req, res) => {
-//     const parsedUrl = url.parse(req.url, true);
-    
 
       
-//     if (req.method === 'POST' && parsedUrl.pathname === '/schedule') {
-
-        
-//         try {
-//             // const data = querystring.parse(body);
-
-//             req.on('data', (chunk) => {
-//                 let body = ''; 
-
-//                 const data = JSON.parse(body);
-
-//                 const { attendee, dtstart, method, stat } = data;
-        
-//                 console.log(attendee); 
-//                 console.log(dtstart); 
-//                 console.log(method); 
-//                 console.log(stat); 
-                
-//                 const result = true; // Temporary place holder
-
-//                 res.writeHead(200, { 'Content-Type': 'application/json' });
-//                 res.end(JSON.stringify({ success: result, message: result ? 'Appointment scheduled successfully' : 'Failed to schedule appointment' }));
-    
-//                 body += chunk.toString();
-//             });
-
-//             // const data = JSON.parse(body);
-
-//             // const { attendee, dtstart, method, stat } = data;
-    
-//             // console.log(attendee); 
-//             // console.log(dtstart); 
-//             // console.log(method); 
-//             // console.log(stat); 
-//             // Perform scheduling logic
-//             // const result = scheduleAppointment(attendee, dtstart, method, stat);
-//             } catch (error) {
-//                 console.error('Error processing POST request:', error);
-
-//                 const errorResponse = JSON.stringify({ success: false, message: 'Internal server error' });
-
-//                 if (!res.headersSent) {
-//                     res.writeHead(500, { 'Content-Type': 'application/json' });
-//                     res.end(errorResponse);
-//                 }
-//             }
-    
-    
-//         // res.writeHead(200, { 'Content-Type': 'text/plain' });
-//         // res.end('Scheduling endpoint');
-//     } else if (req.method === 'GET' && parsedUrl.pathname === '/lookup') {
-//         // Handle lookup logic here
-//         // You can access query parameters with parsedUrl.query
-//         // Example: const uid = parsedUrl.query.uid;
-    
-//         res.writeHead(200, { 'Content-Type': 'text/plain' });
-//         res.end('Lookup endpoint');
-//     } else if (req.method === 'GET' && parsedUrl.pathname === '/cancel') {
-//         // Handle cancel logic here
-//         // You can access query parameters with parsedUrl.query
-//         // Example: const uid = parsedUrl.query.uid;
-    
-//         res.writeHead(200, { 'Content-Type': 'text/plain' });
-//         res.end('Cancel endpoint');
-//     } else {
-//         res.writeHead(404, { 'Content-Type': 'text/plain' });
-//         res.end('Not Found');
-//     }
-// });
   
 const PORT = 3000;
   
