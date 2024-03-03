@@ -162,7 +162,7 @@ const process = async (req, res) => {
             });
 
             const data = JSON.parse(body);
-            const { startdate, enddate } = data;
+            const { startdate, enddate, N} = data;
             let result = true; 
 
             // The dates chosen are not formatted correctly. 
@@ -191,7 +191,7 @@ const process = async (req, res) => {
                 throw error;
             }
 
-            let availableDates = findNDates(new Date(startdate), new Date(enddate), bookedDates); 
+            let availableDates = findNDates(new Date(startdate), new Date(enddate), bookedDates, N); 
             if (availableDates.length > 0){
                 result = true; 
             }
@@ -362,18 +362,20 @@ function isValidDate(dateStr) {
     );
 }
 
-function findNDates(startdate, enddate, unavailabledates){
+function findNDates(startdate, enddate, unavailabledates, N){
     let availDates = []; 
 
     let currentDate = startdate; 
+    let counter = 0; 
 
-    while (currentDate < enddate && availDates.length < 4){
+    while (currentDate < enddate && availDates.length < 4 && counter < N){
         currentDate.setDate(currentDate.getDate() + 1); 
 
         let checkOverlap = compareDates(currentDate, unavailabledates);
         
         if (!isWeekend(currentDate) && !isBankHoliday(currentDate) && checkOverlap == false){
             availDates.push(new Date(currentDate)); 
+            counter++; 
         }
     }
 
