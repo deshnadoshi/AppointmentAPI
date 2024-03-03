@@ -39,12 +39,6 @@ const process = async (req, res) => {
                 });
             });
 
-            // Declaring these to avoid undefined errors
-            // attendee = "";
-            // dtstart = ""; 
-            // method = ""; 
-            // stat = "";  
-
             const data = JSON.parse(body);
             const { attendee, dtstart, method, stat } = data;
             let result = true; 
@@ -109,8 +103,8 @@ const process = async (req, res) => {
                         attendee,
                         dtstart,
                         dtstamp,
-                        method,
-                        stat,
+                        method.toUpperCase(),
+                        stat.toUpperCase(),
                         confirmationCode
                     ];
                 
@@ -222,10 +216,6 @@ const process = async (req, res) => {
             }
         }
     } else if (req.method === 'GET' && parsedUrl.pathname === '/lookup') {
-        // Handle lookup logic here
-        // You can access query parameters with parsedUrl.query
-        // Example: const uid = parsedUrl.query.uid;
-
         try {
             let body = '';
 
@@ -246,10 +236,25 @@ const process = async (req, res) => {
             const data = JSON.parse(body);
             const { uid } = data;
 
-            const result = true; 
+            let result = false; 
+
+            try {
+
+                const connection = await pool.getConnection();
+                const [foundUID] = await connection.execute('SELECT `uid` FROM `appointments` WHERE `uid` = ?', [uid]);
+                connection.release();
+                if (foundUID.length > 0){
+                    result = true; 
+                }
+                   
+            } catch (error) {
+                result = false; 
+                console.error('Error fetching column values:', error);
+                throw error;
+            }
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: result, message: result ? 'Appointment exists' : 'Appointment does not exist' }));
+            res.end(JSON.stringify({ success: result, message: result ? 'Requested appointment exists' : 'Requested appointment does not exist' }));
         } catch (error) {
             console.error('Error processing POST request:', error);
 
