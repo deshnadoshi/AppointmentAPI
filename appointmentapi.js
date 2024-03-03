@@ -41,13 +41,75 @@ const process = async (req, res) => {
 
             const data = JSON.parse(body);
             const { attendee, dtstart, method, stat } = data;
+            let result = true; 
+            
+            // Get all the dates that are already taken.
+            let bookedDates = [];
+            try {
+                const dtstart = 'dtstart';
+                const connection = await pool.getConnection();
+                const [rows] = await connection.execute(`SELECT \`${dtstart}\` FROM \`appointments\``);
+                connection.release();
+        
+                let bookedDates = rows.map(row => row[dtstart]);
+                // bookedDates contains all of the dates that are already in the table
+            
+            } catch (error) {
+                console.error('Error fetching column values:', error);
+                throw error;
+            }
 
-            // Need to add appointment booking logic here
-            // To manipulate sql database
-            const result = true; // Temporary placeholder
+            let checkAttendee = false; 
+            let checkDtstart = false; 
+            let checkMethod = false; 
+            let checkStat = false; 
+
+            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            const phoneRegex = /^\d{3}-?\d{3}-?\d{4}$/;
+
+            if (emailRegex.test(checkAttendee) || phoneRegex.test(attendee)){
+                checkAttendee = true; 
+            }
+
+            let selectedDate = new Date(dtstart); 
+
+            if (isValidDate(dtstart) && !isWeekend(selectedDate) && isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
+                // If it is valid, not a weekend, not a bank holiday, in the correct format, and not already selected, it is a viable date.
+                checkDtstart = true; 
+            }
+
+            if (method.toLowerCase() === "request"){
+                checkMethod = true; 
+            }
+
+            if (stat.toLowerCase() === "confirmed" || stat.toLowerCase() === "tentative"){
+                checkStat = true; 
+            }
+
+            let confirmationCode = ""; 
+
+            if (checkAttendee && checkDtstart && checkMethod && checkStat){
+                result = true; 
+                confirmationCode = generateConfirmationCode(); 
+                
+
+
+            } else {
+                result = false; 
+            }
+            
+
+
+
+
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: result, message: result ? 'Appointment scheduled successfully' : 'Failed to schedule appointment' }));
+            const responseMessage = result
+                ? `The appointment has been scheduled successfully. Here is the confirmation code: ${JSON.stringify(confirmationCode)}`
+                : 'One or more entries in your request are invalid/incorrectly formatted. Please try again.';
+          
+          
+            res.end(JSON.stringify({ success: result, message: responseMessage }));
         } catch (error) {
             console.error('Error processing POST request:', error);
 
@@ -383,4 +445,12 @@ function compareDates(dateObj, dateArr){
     }
 
     return false; 
+}
+
+function generateConfirmationCode() {
+    const timestamp = new Date().getTime().toString();
+    const hash = crypto.createHash('sha256').update(timestamp).digest('hex');
+    const code = hash.substring(0, 8); 
+  
+    return code;
 }
