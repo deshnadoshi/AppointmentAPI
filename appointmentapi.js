@@ -5,6 +5,7 @@ const url = require('url');
 const { time } = require('console');
 const crypto = require('crypto');
 const querystring = require('querystring');
+const { start } = require('repl');
 
 const pool = mysql.createPool({
     host: 'localhost',
@@ -91,6 +92,7 @@ const process = async (req, res) => {
             }
 
             // Load all of the existing dates from the SQL database. 
+            let bookedDates = [];
             try {
                 const dtstart = 'dtstart';
                 const connection = await pool.getConnection();
@@ -98,22 +100,27 @@ const process = async (req, res) => {
                 connection.release();
         
                 let bookedDates = rows.map(row => row[dtstart]);
-                // bookedDates contains all of the dates that are in the table
+                // bookedDates contains all of the dates that are already in the table
             
             } catch (error) {
                 console.error('Error fetching column values:', error);
                 throw error;
             }
 
-            
-             
-            
-
-
-            
+            let availableDates = findNDates(new Date(startdate), new Date(enddate), bookedDates); 
+            if (availableDates.length > 0){
+                result = true; 
+            }
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: result, message: result ? 'The following dates are available -' : 'There are no dates available/There may be a formatting error in your dates. Try again.' }));
+            const responseMessage = result
+                ? `The following dates are available - ${JSON.stringify(availableDates)}`
+                : 'There are no dates available/There may be a formatting error in your dates. Try again.';
+          
+          
+            res.end(JSON.stringify({ success: result, message: responseMessage }));
+
+
         } catch (error) {
             console.error('Error processing POST request:', error);
 
@@ -317,4 +324,63 @@ function isValidDate(date_str) {
         date.getMonth() === month &&
         date.getDate() === day
     );
+}
+
+function findNDates(startdate, enddate, unavailabledates){
+    let availDates = []; 
+
+    let currentDate = startdate; 
+
+    while (currentDate < enddate && availDates.length < 4){
+        currentDate.setDate(currentDate.getDate() + 1); 
+
+        let checkOverlap = compareDates(currentDate, unavailabledates);
+        
+        if (!isWeekend(currentDate) && !isBankHoliday(currentDate) && checkOverlap == false){
+            availDates.push(new Date(currentDate)); 
+        }
+    }
+
+
+    return availDates;
+
+}
+
+function isBankHoliday(dateObj){
+    const bankHolidays = [
+        "01-01", // New Year's Day
+        "07-04", // Independence Day
+        "12-25",  // Christmas Day
+        "02-19", // President's Day
+        "06-19", // Juneteenth
+        "11-11", // Veterans Day
+        "11-28" // Thanksgiving
+    ];
+
+    if (bankHolidays.includes(dateObj.getMonth() + "-" + dateObj.getDate())){
+        return true; 
+    }
+
+    return false; 
+
+}
+
+function isWeekend(dateObj){
+    const isWeekend = (dateObj.getDay() === 5 || dateObj.getDay() === 6); 
+    if (isWeekend){
+        return true;  
+    }
+
+    return false; 
+
+}
+
+function compareDates(dateObj, dateArr){
+    for (let i = 0; i < dateArr.length; i++){
+        if (dateArr[i].toString() === dateObj.toString()){
+            return true;   
+        }
+    }
+
+    return false; 
 }
