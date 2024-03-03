@@ -9,6 +9,11 @@
   "author": "Deshna Doshi",
   "license": "ISC",
   "dependencies": {
-    "mysql2": "^3.9.2"
+    "console": "^0.7.2",
+    "crypto": "^1.0.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "mysql2": "^3.9.2",
+    "url": "^0.11.3"
   }
 }
