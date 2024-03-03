@@ -266,9 +266,6 @@ const process = async (req, res) => {
             }
         }
     } else if (req.method === 'GET' && parsedUrl.pathname === '/cancel') {
-        // Handle cancel logic here
-        // You can access query parameters with parsedUrl.query
-        // Example: const uid = parsedUrl.query.uid;
 
         try {
             let body = '';
@@ -290,7 +287,23 @@ const process = async (req, res) => {
             const data = JSON.parse(body);
             const { uid } = data;
 
-            const result = true; 
+            let result = false; 
+
+            try {
+
+                const connection = await pool.getConnection();
+                const [foundUID] = await connection.execute('SELECT `uid` FROM `appointments` WHERE `uid` = ?', [uid]);
+                connection.release();
+                if (foundUID.length > 0){
+                    await connection.execute('UPDATE `appointments` SET `stat` = ?, `dtstart` = NULL WHERE `uid` = ?', ['CANCELED', uid]);
+                    result = true; 
+                }
+                   
+            } catch (error) {
+                result = false; 
+                console.error('Error fetching column values:', error);
+                throw error;
+            }
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: result, message: result ? 'Appointment cancelled successfully' : 'Appointment does not exist' }));
