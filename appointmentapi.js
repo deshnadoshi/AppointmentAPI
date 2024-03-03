@@ -325,10 +325,6 @@ const process = async (req, res) => {
 
 const server = http.createServer(process);
 
-
-
-      
-  
 const PORT = 3000;
   
 server.listen(PORT, () => {
@@ -430,3 +426,5 @@ function generateConfirmationCode() {
   
     return code;
 }
+
+module.exports = {server}; 
