@@ -9,6 +9,6 @@ CREATE TABLE appointments (
     method VARCHAR(255),
     stat VARCHAR(255),
     uid VARCHAR(255) PRIMARY KEY
-
+    UNIQUE KEY uniqueDtstart (dtstart)
 );
 

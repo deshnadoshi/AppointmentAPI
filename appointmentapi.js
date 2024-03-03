@@ -59,7 +59,7 @@ const process = async (req, res) => {
         
                 let bookedDates = rows.map(row => row[dtstart]);
                 // bookedDates contains all of the dates that are already in the table
-            
+                console.log(bookedDates); 
             } catch (error) {
                 console.error('Error fetching column values:', error);
                 throw error;
@@ -100,42 +100,34 @@ const process = async (req, res) => {
                 confirmationCode = generateConfirmationCode(); 
                 try {
                     const connection = await pool.getConnection();
-                
+
                     const query = `
                       INSERT INTO appointments (attendee, dtstart, dtstamp, method, stat, uid)
                       VALUES (?, ?, ?, ?, ?, ?)
                     `;
                 
                     const params = [
-                      data.attendee,
-                      data.dtstart,
-                      data.dtstamp,
-                      data.method,
-                      data.stat,
-                      data.uid
+                        attendee,
+                        dtstart,
+                        dtstamp,
+                        method,
+                        stat,
+                        confirmationCode
                     ];
                 
                     const [newEntry] = await connection.execute(query, params);
-                
                     connection.release();
-                
-                    console.log('New entry added:', newEntry);
-                
-                    return insertResult;
+                                
                 } catch (error) {
+                    
+
                     console.error('Error adding new entry:', error);
                     throw error;
                 }
                           
-
             } else {
                 result = false; 
             }
-            
-
-
-
-
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             const responseMessage = result
