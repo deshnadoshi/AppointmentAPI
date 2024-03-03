@@ -31,11 +31,8 @@ const process = async (req, res) => {
             const data = JSON.parse(body);
             const { attendee, dtstart, method, stat } = data;
 
-            console.log(attendee);
-            console.log(dtstart);
-            console.log(method);
-            console.log(stat);
-
+            // Need to add appointment booking logic here
+            // To manipulate sql database
             const result = true; // Temporary placeholder
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
