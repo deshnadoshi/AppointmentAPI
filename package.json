@@ -1,0 +1,11 @@
+{
+  "name": "software-engineering-assignment-6",
+  "version": "1.0.0",
+  "description": "Software Engineering Assignment 6, due 3/5/2024",
+  "main": "appointmentapi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Deshna Doshi",
+  "license": "ISC"
+}
