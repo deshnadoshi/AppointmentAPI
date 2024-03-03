@@ -52,15 +52,79 @@ const process = async (req, res) => {
         // You can access query parameters with parsedUrl.query
         // Example: const uid = parsedUrl.query.uid;
 
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Lookup endpoint');
+        try {
+            let body = '';
+
+            await new Promise((resolve, reject) => {
+                req.on('data', (chunk) => {
+                    body += chunk.toString();
+                });
+
+                req.on('end', () => {
+                    resolve();
+                });
+
+                req.on('error', (error) => {
+                    reject(error);
+                });
+            });
+
+            const data = JSON.parse(body);
+            const { uid } = data;
+
+            const result = true; 
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: result, message: result ? 'Appointment exists' : 'Appointment does not exist' }));
+        } catch (error) {
+            console.error('Error processing POST request:', error);
+
+            const errorResponse = JSON.stringify({ success: false, message: 'Internal server error' });
+
+            if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(errorResponse);
+            }
+        }
     } else if (req.method === 'GET' && parsedUrl.pathname === '/cancel') {
         // Handle cancel logic here
         // You can access query parameters with parsedUrl.query
         // Example: const uid = parsedUrl.query.uid;
 
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Cancel endpoint');
+        try {
+            let body = '';
+
+            await new Promise((resolve, reject) => {
+                req.on('data', (chunk) => {
+                    body += chunk.toString();
+                });
+
+                req.on('end', () => {
+                    resolve();
+                });
+
+                req.on('error', (error) => {
+                    reject(error);
+                });
+            });
+
+            const data = JSON.parse(body);
+            const { uid } = data;
+
+            const result = true; 
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: result, message: result ? 'Appointment cancelled successfully' : 'Appointment does not exist' }));
+        } catch (error) {
+            console.error('Error processing POST request:', error);
+
+            const errorResponse = JSON.stringify({ success: false, message: 'Internal server error' });
+
+            if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(errorResponse);
+            }
+        }
     } else {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
