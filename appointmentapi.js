@@ -63,25 +63,26 @@ const process = async (req, res) => {
             let checkMethod = false; 
             let checkStat = false; 
 
+
             const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
             const phoneRegex = /^\d{3}-?\d{3}-?\d{4}$/;
 
-            if (emailRegex.test(attendee) || phoneRegex.test(attendee)){
+            if (attendee && (emailRegex.test(attendee) || phoneRegex.test(attendee))){
                 checkAttendee = true; 
             }
 
             let selectedDate = new Date(dtstart); 
 
-            if (isValidDate(dtstart) && !isWeekend(selectedDate) && !isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
+            if (dtstart && isValidDate(dtstart) && !isWeekend(selectedDate) && !isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
                 // If it is valid, not a weekend, not a bank holiday, in the correct format, and not already selected, it is a viable date.
                 checkDtstart = true; 
             }
 
-            if (method.toLowerCase() === "request"){
+            if (method && method.toLowerCase() === "request"){
                 checkMethod = true; 
             }
 
-            if (stat.toLowerCase() === "confirmed" || stat.toLowerCase() === "tentative"){
+            if (stat && (stat.toLowerCase() === "confirmed" || stat.toLowerCase() === "tentative")){
                 checkStat = true; 
             }
 
@@ -237,14 +238,19 @@ const process = async (req, res) => {
             const { uid } = data;
 
             let result = false; 
+            let appointmentData = null; 
+
 
             try {
 
                 const connection = await pool.getConnection();
                 const [foundUID] = await connection.execute('SELECT `uid` FROM `appointments` WHERE `uid` = ?', [uid]);
+                const [foundAppointment] = await connection.execute('SELECT * FROM `appointments` WHERE `uid` = ?', [uid]);
+
                 connection.release();
                 if (foundUID.length > 0){
                     result = true; 
+                    appointmentData = foundAppointment[0]; 
                 }
                    
             } catch (error) {
@@ -254,7 +260,7 @@ const process = async (req, res) => {
             }
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: result, message: result ? 'Requested appointment exists' : 'Requested appointment does not exist' }));
+            res.end(JSON.stringify({ success: result, message: result ? 'Requested appointment exists' : 'Requested appointment does not exist', details: appointmentData }));
         } catch (error) {
             console.error('Error processing POST request:', error);
 
