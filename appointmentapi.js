@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const { start } = require('repl');
 
+// Set-up the connection to the MySQL Database. 
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
@@ -17,7 +18,7 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
   
-
+// Process the GET requests for all the required functionality. 
 const process = async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
 
@@ -330,10 +331,12 @@ const process = async (req, res) => {
     }
 };
 
+
 const server = http.createServer(process);
 
 const PORT = 3000;
   
+// Set-up the server and port. 
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
@@ -341,6 +344,8 @@ server.listen(PORT, () => {
 
 
 // Helper Functions
+
+// Check if the date is formatted correctly. 
 function checkDateFormat(str){
     const date_regex = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -351,6 +356,7 @@ function checkDateFormat(str){
     return false; 
 }
 
+// Check if the date is valid. 
 function isValidDate(dateStr) {
     let year = Number(dateStr.split("-")[0]); 
     let month = Number(dateStr.split("-")[1]) - 1; 
@@ -365,6 +371,7 @@ function isValidDate(dateStr) {
     );
 }
 
+// Find N dates given a start date, end date, and N. 
 function findNDates(startdate, enddate, unavailabledates, N){
     let availDates = []; 
 
@@ -387,6 +394,7 @@ function findNDates(startdate, enddate, unavailabledates, N){
 
 }
 
+// Check if the date is a bank holiday. 
 function isBankHoliday(dateStr){
     let month = Number(dateStr.split("-")[1]); 
     let day = Number(dateStr.split("-")[2]); 
@@ -410,6 +418,7 @@ function isBankHoliday(dateStr){
 
 }
 
+// Check if the date is a bank holiday. 
 function isBankHolidayDateObj(date_obj){
 
 
@@ -431,6 +440,7 @@ function isBankHolidayDateObj(date_obj){
 
 }
 
+// Check if the date falls on a weekend. 
 function isWeekend(dateObj){
     const isWeekend = (dateObj.getDay() === 5 || dateObj.getDay() === 6); 
     if (isWeekend){
@@ -441,6 +451,7 @@ function isWeekend(dateObj){
 
 }
 
+// Check if two dates are the same. 
 function compareDates(dateObj, dateArr){
     for (let i = 0; i < dateArr.length; i++){
         if (dateArr[i].toString() === dateObj.toString()){
@@ -451,6 +462,7 @@ function compareDates(dateObj, dateArr){
     return false; 
 }
 
+// Generate confirmation codes. 
 function generateConfirmationCode() {
     const timestamp = new Date().getTime().toString();
     const hash = crypto.createHash('sha256').update(timestamp).digest('hex');
