@@ -121,6 +121,24 @@ describe('Appointment API', () => {
     it ('should return failure message for an invalid find N dates request', async () => {
         const invalidRequest = {
             startdate: "2024-01-14",
+            enddate : "202302-13",
+            N : "4"
+        };
+
+        const response = await app
+            .get('/nextndates')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('There are no dates available/There may be a formatting error in your dates. Try again');
+    });
+
+
+    // Test Case 9: End date should not be after start date.  
+    it ('should return failure message for an end date that is after the start date', async () => {
+        const invalidRequest = {
+            startdate: "2024-01-14",
             enddate : "2023-02-13",
             N : "4"
         };
@@ -133,6 +151,43 @@ describe('Appointment API', () => {
         expect(response.body.success).toBe(false);
         expect(response.body.message).toContain('There are no dates available/There may be a formatting error in your dates. Try again');
     });
+
+    // Test Case 10: There should be no missing data in a find N dates request.  
+    it ('should return failure message for missing data in a find N dates request', async () => {
+        const invalidRequest = {
+            startdate: "2024-01-14",
+            enddate : "2023-02-13",
+        };
+
+        const response = await app
+            .get('/nextndates')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('There are no dates available/There may be a formatting error in your dates. Try again');
+    });
+
+    // Test Case 11: There should be no missing data in a schedule request.  
+    it ('should return failure message for missing data in a schedule request', async () => {
+        const invalidRequest = {
+            attendee: 'test@example.com',
+            method: 'request',
+            stat: 'confirmed'
+
+        };
+
+        const response = await app
+            .get('/schedule')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
+    });
+
+
+
 
 
 
