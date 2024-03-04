@@ -72,11 +72,12 @@ const process = async (req, res) => {
             }
 
             let selectedDate = new Date(dtstart); 
-
-            if (dtstart && isValidDate(dtstart) && !isWeekend(selectedDate) && !isBankHoliday(selectedDate) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
+            
+            if (dtstart && isValidDate(dtstart) && !isWeekend(selectedDate) && !isBankHoliday(dtstart) && checkDateFormat(dtstart) && !bookedDates.includes(selectedDate)){
                 // If it is valid, not a weekend, not a bank holiday, in the correct format, and not already selected, it is a viable date.
                 checkDtstart = true; 
             }
+
 
             if (method && method.toLowerCase() === "request"){
                 checkMethod = true; 
@@ -375,7 +376,7 @@ function findNDates(startdate, enddate, unavailabledates, N){
 
         let checkOverlap = compareDates(currentDate, unavailabledates);
         
-        if (!isWeekend(currentDate) && !isBankHoliday(currentDate) && checkOverlap == false){
+        if (!isWeekend(currentDate) && !isBankHolidayDateObj(currentDate) && checkOverlap == false){
             availDates.push(new Date(currentDate)); 
             counter++; 
         }
@@ -386,8 +387,33 @@ function findNDates(startdate, enddate, unavailabledates, N){
 
 }
 
-function isBankHoliday(dateObj){
+function isBankHoliday(dateStr){
+    let month = Number(dateStr.split("-")[1]); 
+    let day = Number(dateStr.split("-")[2]); 
+
     const bankHolidays = [
+        "1-1", // New Year's Day
+        "7-4", // Independence Day
+        "12-25",  // Christmas Day
+        "2-19", // President's Day
+        "6-19", // Juneteenth
+        "11-11", // Veterans Day
+        "11-28" // Thanksgiving
+    ];
+
+    
+    if (bankHolidays.includes(month + "-" + day)){
+        return true; 
+    }
+
+    return false; 
+
+}
+
+function isBankHolidayDateObj(date_obj){
+
+
+    const bank_holidays = [
         "01-01", // New Year's Day
         "07-04", // Independence Day
         "12-25",  // Christmas Day
@@ -397,7 +423,7 @@ function isBankHoliday(dateObj){
         "11-28" // Thanksgiving
     ];
 
-    if (bankHolidays.includes(dateObj.getMonth() + "-" + dateObj.getDate())){
+    if (bank_holidays.includes(date_obj.getMonth() + "-" + date_obj.getDate())){
         return true; 
     }
 

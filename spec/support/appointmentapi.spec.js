@@ -6,7 +6,7 @@ const app = supertest(server);
 
 describe('Appointment API', () => {
     // Test Case 1: A valid schedule request should be accepted.
-    /**it ('should return success message for a valid schedule request', async () => {
+    it ('should return success message for a valid schedule request', async () => {
         const validRequest = {
             attendee: 'test@example.com',
             dtstart: '2024-04-01',
@@ -21,7 +21,7 @@ describe('Appointment API', () => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(response.body.message).toContain('The appointment has been scheduled successfully');
-    });**/
+    });
 
     // Test Case 2: An invalid schedule request should not be accepted.
     it ('should return failure message for an invalid schedule request', async () => {
@@ -186,8 +186,81 @@ describe('Appointment API', () => {
         expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
     });
 
+    // Test Case 12: An invalid attendee should not be able to process a schedule request.  
+    it ('should return failure message for incorrect attendee in a schedule request', async () => {
+        const invalidRequest = {
+            attendee: 'john doe',
+            dtstart : '2026-02-03',
+            method: 'request',
+            stat: 'confirmed'
 
+        };
 
+        const response = await app
+            .get('/schedule')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
+    });
+
+    // Test Case 13: An invalid dtstart should not be able to process a schedule request.  
+    it ('should return failure message for incorrect dtstart in a schedule request', async () => {
+        const invalidRequest = {
+            attendee: 'test2@gmail.com',
+            dtstart : '2025-01-01',
+            method: 'request',
+            stat: 'confirmed'
+
+        };
+
+        const response = await app
+            .get('/schedule')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
+    });
+
+    // Test Case 14: An invalid method should not be able to process a schedule request.  
+    it ('should return failure message for incorrect method in a schedule request', async () => {
+        const invalidRequest = {
+            attendee: 'test3@gmail.com',
+            dtstart : '2026-02-03',
+            method: 'approved',
+            stat: 'confirmed'
+
+        };
+
+        const response = await app
+            .get('/schedule')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
+    });
+
+    // Test Case 15: An invalid status should not be able to process a schedule request.  
+    it ('should return failure message for incorrect status in a schedule request', async () => {
+        const invalidRequest = {
+            attendee: 'test3@gmail.com',
+            dtstart : '2029-02-03',
+            method: 'request',
+            stat: 'checked'
+
+        };
+
+        const response = await app
+            .get('/schedule')
+            .send(invalidRequest);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(false);
+        expect(response.body.message).toContain('One or more entries in your request is a duplicate or invalid/incorrectly formatted. Please try again.');
+    });
 
 
 
