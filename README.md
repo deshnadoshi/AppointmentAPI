@@ -1,5 +1,5 @@
 # ECE452: Software Engineering Assignment 6
-#### Deshna Doshi, dd1035, 206009273
+#### Deshna Doshi, dd1035
 ### Algorithm Design Notes: 
 
 **_JASMINE TEST CASES NOTE: Running 'npm test' more than once in a row (without resetting or clearing the database) will cause the Jasmine test cases to FAIL. The reason being, on the first iteration of the test cases, the valid scheduling test case (Test Case 1), will be added to the database. If you run 'npm test' again, it will recognize that the contents of Test Case 1 already exist in the database, and will throw a duplication error. Therefore, that test case will fail, despite it being correct and functional, due to the structure of a database and because we don't have the possibility of resetting the database on every iteration of running the Jasmine test cases._**
